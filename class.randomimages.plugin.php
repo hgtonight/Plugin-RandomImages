@@ -67,7 +67,7 @@ class RandomImagesPlugin extends Gdn_Plugin {
     else {
 			$Discussions = $DiscussionModel;
 		}
-    
+    $Class = C('Plugins.RandomImages.Float', 'Right');
 		$Images = array();
 		$ImageMax = C('Plugins.RandomImages.MaxLength', 10);
 		foreach($Discussions as $TDiscussion) {
@@ -85,7 +85,7 @@ class RandomImagesPlugin extends Gdn_Plugin {
 		// remove random images until we are under the max length
 		while(count($Images) > $ImageMax) {
 			unset($Images[array_rand($Images)]);
-		}
+		}	
 		// shuffle it
 		$ImageList = '';
 		if(shuffle($Images)) {
@@ -94,8 +94,7 @@ class RandomImagesPlugin extends Gdn_Plugin {
 				$ImageList .= Wrap(Anchor(Img($Image['image'], array('class' => 'RandomImage')), $Image['url']),'li');
 			}
 		}
-    
-		echo Wrap($ImageList, 'ul', array('id' => 'RandomImageList'));
+    echo Wrap($ImageList, 'ul', array('id' => 'RandomImageList', 'class' => $Class));
 	}
 	
 	public function SettingsController_RandomImages_Create($Sender) {
@@ -104,14 +103,18 @@ class RandomImagesPlugin extends Gdn_Plugin {
 		$Validation = new Gdn_Validation();
 		$ConfigurationModel = new Gdn_ConfigurationModel($Validation);
 		$ConfigurationModel->SetField(array(
-			'Plugins.RandomImages.MaxLength'
+			'Plugins.RandomImages.MaxLength',
+      'Plugins.RandomImages.Float'
 			));
 		$Sender->Form->SetModel($ConfigurationModel);
 
 		if ($Sender->Form->AuthenticatedPostBack() === FALSE) {
 			$Sender->Form->SetData($ConfigurationModel->Data);
 		} else {
-			$ConfigurationModel->Validation->ApplyRule('Plugins.RandomImages.MaxLength', 'Integer');
+			$ConfigurationModel->Validation->ApplyRule('Plugins.RandomImages.MaxLength', 'Required');
+      $ConfigurationModel->Validation->ApplyRule('Plugins.RandomImages.MaxLength', 'Integer');
+      $ConfigurationModel->Validation->ApplyRule('Plugins.RandomImages.Float', 'Required');
+			$ConfigurationModel->Validation->ApplyRule('Plugins.RandomImages.Float', 'String');
 			if ($Sender->Form->Save() !== FALSE) {
         		$Sender->InformMessage('<span class="InformSprite Sliders"></span>'.T("Your changes have been saved."),'HasSprite');
 			}

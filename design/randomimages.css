@@ -1,8 +1,16 @@
 #RandomImageList {
 	display: inline-block;
-	float: right;
 	width: 170px;
+}
+
+#RandomImageList.Right {
+	float: right;
 	margin-right: -180px;
+}
+
+#RandomImageList.Left {
+	float: left;
+	margin-left: -180px;
 }
 
 #RandomImageList img {

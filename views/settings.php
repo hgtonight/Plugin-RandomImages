@@ -12,6 +12,12 @@ echo Wrap(
 			'div',
 			array('class' => 'Info')).
 		$this->Form->Textbox('Plugins.RandomImages.MaxLength', array('maxlength' => '3')),
+		'li') . 
+  Wrap($this->Form->Label(T('Side'), 'Plugins.RandomImages.Float').
+		Wrap(T('The side the image list will be displayed'),
+			'div',
+			array('class' => 'Info')).
+		$this->Form->DropDown('Plugins.RandomImages.Float', array('Left' => 'Left', 'Right' => 'Right')),
 		'li'),
 	'ul');
 
