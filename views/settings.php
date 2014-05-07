@@ -18,6 +18,9 @@ echo Wrap(
 			'div',
 			array('class' => 'Info')).
 		$this->Form->DropDown('Plugins.RandomImages.Float', array('Left' => 'Left', 'Right' => 'Right')),
+		'li') . 
+  Wrap($this->Form->Label(T('Disable CSS'), 'Plugins.RandomImages.DisableCSS').
+		$this->Form->CheckBox('Plugins.RandomImages.DisableCSS', 'The included CSS will not be included if checked'),
 		'li'),
 	'ul');
 
