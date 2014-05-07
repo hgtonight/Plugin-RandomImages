@@ -1,8 +1,8 @@
 #RandomImageList {
 	display: inline-block;
-	float: left;
+	float: right;
 	width: 170px;
-	margin-left: -180px;
+	margin-right: -180px;
 }
 
 #RandomImageList img {

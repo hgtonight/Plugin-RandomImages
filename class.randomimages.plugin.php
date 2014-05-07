@@ -16,7 +16,7 @@
 $PluginInfo['RandomImages'] = array(
 	'Name' => 'Random Images',
 	'Description' => 'Renders a list of random images from the current discussion model.',
-	'Version' => '0.5',
+	'Version' => '0.6',
 	'MobileFriendly' => TRUE,
 	'RequiredApplications' => array('Vanilla' => '2.0.18.8'),
 	'SettingsUrl' => '/settings/randomimages',
@@ -35,14 +35,14 @@ class RandomImagesPlugin extends Gdn_Plugin {
 
 	public function DiscussionsController_BeforeRenderAsset_Handler($Sender) {
 		if($Sender->EventArguments['AssetName'] == 'Content') {
-			$Discussions = $Sender->Data['Discussions'];
+      $Discussions = $Sender->Data['Discussions'];
 			$this->_RenderImageList($Discussions);
 		}
 	}
 	
 	public function CategoriesController_BeforeRenderAsset_Handler($Sender) {
 		if($Sender->EventArguments['AssetName'] == 'Content') {
-			$Discussions = $Sender->Data['Discussions'];
+      $Discussions = $Sender->Data['Discussions'];
 			$this->_RenderImageList($Discussions);
 		}
 	}
@@ -60,48 +60,41 @@ class RandomImagesPlugin extends Gdn_Plugin {
 	}
 	
 	private function _RenderImageList($DiscussionModel) {
-		if(!method_exists($DiscussionModel, 'Result') ) {
-			// Fail gracefully if a discussion model object was passed
-			return FALSE;
+		// Get the discussion list
+    if(method_exists($DiscussionModel, 'Result') ) {
+      $Discussions = $DiscussionModel->Result();
+    }
+    else {
+			$Discussions = $DiscussionModel;
 		}
-		
+    
 		$Images = array();
-		$CulledImages = array();
-		$ImageList = '';
-		$ImageCount = 0;
 		$ImageMax = C('Plugins.RandomImages.MaxLength', 10);
-		foreach($DiscussionModel->Result() as $Discussion) {
-			$ImageFound = preg_match_all('/([a-z\-_0-9\/\:\.]*\.(jpg|jpeg|png|gif))/i', $Discussion->Body, $ImageSrcs);
+		foreach($Discussions as $TDiscussion) {
+      $Discussion = (array)$TDiscussion;
+      $ImageSrcs = NULL;
+		  $ImageFound = preg_match_all('/([a-z\-_0-9\/\:\.]*\.(jpg|jpeg|png|gif))/i', $Discussion['Body'], $ImageSrcs);
 			if ($ImageFound) {
 				$i = 0;
 				while($i < $ImageFound) {
-					array_push($Images, array('image' => $ImageSrcs[0][$i], 'url' => $Discussion->Url));
+					array_push($Images, array('image' => $ImageSrcs[0][$i], 'url' => $Discussion['Url']));
 					$i++;
 				}
 			}
 		}
-		
-		if(count($Images) <= $ImageMax) {
-			// shuffle it to still be random
-			if(shuffle($Images)) {
-				$CulledImages = &$Images;
-			}
+		// remove random images until we are under the max length
+		while(count($Images) > $ImageMax) {
+			unset($Images[array_rand($Images)]);
 		}
-		else {
-			// add random images until we are at max length
-			while(count($CulledImages) < $ImageMax) {
-				$TempKey = array_rand($Images);
-				array_push($CulledImages, $Images[$TempKey]);
-				unset($Images[$TempKey]);
-			}
-		}
-		
+		// shuffle it
 		$ImageList = '';
-		foreach($CulledImages as $Image) {
-			// assemble a list
-			$ImageList .= Wrap(Anchor(Img($Image['image'], array('class' => 'RandomImage')), $Image['url']),'li');
+		if(shuffle($Images)) {
+			foreach($Images as $Image) {
+				// assemble a list
+				$ImageList .= Wrap(Anchor(Img($Image['image'], array('class' => 'RandomImage')), $Image['url']),'li');
+			}
 		}
-		
+    
 		echo Wrap($ImageList, 'ul', array('id' => 'RandomImageList'));
 	}
 	
@@ -119,7 +112,6 @@ class RandomImagesPlugin extends Gdn_Plugin {
 			$Sender->Form->SetData($ConfigurationModel->Data);
 		} else {
 			$ConfigurationModel->Validation->ApplyRule('Plugins.RandomImages.MaxLength', 'Integer');
-        	$Data = $Sender->Form->FormValues();
 			if ($Sender->Form->Save() !== FALSE) {
         		$Sender->InformMessage('<span class="InformSprite Sliders"></span>'.T("Your changes have been saved."),'HasSprite');
 			}
